@@ -1,0 +1,1242 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cómo se llamaba</title>
+  <meta name="description" content="Registro de personas con GPS: filtra por cualidad, categoria, lugar, zona y cercania.">
+  <meta name="theme-color" content="#2547C4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#11151B" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Public+Sans:wght@400;500;600;700&display=swap">
+  <style>
+    /* Mismo suelo que aplica el visor de artifacts, para que se vea igual fuera. */
+    html{color-scheme:light dark}
+    body{margin:0; font:14px system-ui, -apple-system, sans-serif}
+    img{max-width:100%}
+    [hidden]{display:none !important}
+  </style>
+</head>
+<body>
+<style>
+  :root{
+    --bg:#EDEFF2;
+    --paper:#FBFCFD;
+    --paper-2:#F3F5F9;
+    --ink:#141A22;
+    --ink-2:#4A5563;
+    --ink-3:#7B8698;
+    --rule:#D6DCE4;
+    --rule-2:#C0C9D6;
+    --accent:#2547C4;
+    --accent-ink:#1B379C;
+    --accent-soft:#E2E8FB;
+    --on-accent:#FFFFFF;
+    --geo:#0F6E63;
+    --geo-soft:#D9EEEA;
+    --due:#AF421E;
+    --due-soft:#F7E5DD;
+    --shadow:0 1px 2px rgba(20,26,34,.05), 0 10px 26px -14px rgba(20,26,34,.22);
+    --r:10px;
+    --serif:"Instrument Serif", Georgia, "Times New Roman", serif;
+    --sans:"Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#11151B;
+      --paper:#1A2029;
+      --paper-2:#212A36;
+      --ink:#E7EBF1;
+      --ink-2:#A4AFBE;
+      --ink-3:#6E7A89;
+      --rule:#2B3441;
+      --rule-2:#3A4553;
+      --accent:#8CAAFF;
+      --accent-ink:#B6C8FF;
+      --accent-soft:#1E2B4A;
+      --on-accent:#11151B;
+      --geo:#4FC7B6;
+      --geo-soft:#12312D;
+      --due:#EE9068;
+      --due-soft:#3B2519;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#11151B;
+    --paper:#1A2029;
+    --paper-2:#212A36;
+    --ink:#E7EBF1;
+    --ink-2:#A4AFBE;
+    --ink-3:#6E7A89;
+    --rule:#2B3441;
+    --rule-2:#3A4553;
+    --accent:#8CAAFF;
+    --accent-ink:#B6C8FF;
+    --accent-soft:#1E2B4A;
+    --on-accent:#11151B;
+    --geo:#4FC7B6;
+    --geo-soft:#12312D;
+    --due:#EE9068;
+    --due-soft:#3B2519;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -14px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.5;
+    -webkit-text-size-adjust:100%;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important; transition-duration:.01ms !important}
+  }
+
+  .shell{max-width:620px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;}
+
+  .mast{
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    padding:18px 20px 12px; border-bottom:1px solid var(--rule);
+  }
+  .mast h1{font-family:var(--serif); font-weight:400; font-size:27px; line-height:1; margin:0; letter-spacing:.01em;}
+  .mast .tally{
+    font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-3); font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+
+  main{flex:1; padding:18px 20px 96px;}
+  .view[hidden]{display:none !important}
+
+  .eyebrow{
+    font-family:var(--mono); font-size:11px; font-weight:500;
+    letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); margin:0 0 7px;
+  }
+  .hint{color:var(--ink-2); font-size:13.5px; margin:8px 0 0; line-height:1.45;}
+
+  /* ---------------- campos ---------------- */
+  .field{margin-bottom:18px;}
+  input[type=text], textarea, select{
+    width:100%; font-family:var(--sans); font-size:16px; color:var(--ink);
+    background:var(--paper); border:1px solid var(--rule-2);
+    border-radius:var(--r); padding:11px 13px; line-height:1.45;
+  }
+  input[type=text]:focus-visible, textarea:focus-visible, select:focus-visible,
+  button:focus-visible, .chip:focus-visible, .row:focus-visible, a:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  #f-nombre{font-family:var(--serif); font-size:29px; padding:5px 13px 8px; line-height:1.25;}
+  textarea{
+    resize:vertical; min-height:96px; line-height:23px;
+    background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 22px, var(--rule) 22px, var(--rule) 23px);
+    background-position:0 12px; background-attachment:local;
+  }
+  ::placeholder{color:var(--ink-3); opacity:1}
+
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:7px;}
+  .chip{
+    font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:.03em;
+    padding:5px 10px; border-radius:999px; border:1px solid var(--rule-2);
+    background:var(--paper); color:var(--ink-2); cursor:pointer;
+  }
+  .chip[aria-pressed="true"]{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-ink);}
+  .chip .n{opacity:.55; margin-left:5px; font-variant-numeric:tabular-nums;}
+
+  /* ---------------- gps ---------------- */
+  .geo{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    border:1px solid var(--rule-2); border-radius:var(--r);
+    background:var(--paper); padding:10px 12px 10px 14px; margin-bottom:18px;
+  }
+  .geo .lbl{font-family:var(--mono); font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3);}
+  .geo .val{font-family:var(--mono); font-size:12.5px; color:var(--ink-2); font-variant-numeric:tabular-nums; margin-top:2px;}
+  .geo.on{border-color:var(--geo); background:var(--geo-soft);}
+  .geo.on .lbl, .geo.on .val{color:var(--geo);}
+  .geo.blocked{border-color:var(--due); background:var(--due-soft);}
+  .geo.blocked .lbl, .geo.blocked .val{color:var(--due);}
+  .geo.blocked .dot{background:var(--due);}
+  .dot{
+    display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:var(--ink-3); margin-right:7px; vertical-align:1px;
+  }
+  .geo.on .dot{background:var(--geo); box-shadow:0 0 0 3px var(--geo-soft);}
+
+  /* ---------------- botones ---------------- */
+  button{font-family:var(--sans); cursor:pointer;}
+  .btn{
+    border:1px solid var(--rule-2); background:var(--paper); color:var(--ink);
+    border-radius:var(--r); padding:11px 16px; font-size:15px; font-weight:600;
+  }
+  .btn:hover{border-color:var(--ink-3)}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--on-accent);}
+  .btn.primary:hover{background:var(--accent-ink); border-color:var(--accent-ink)}
+  .btn.wide{width:100%}
+  .btn.small{padding:7px 12px; font-size:13.5px; font-weight:500;}
+  .btn.danger{color:var(--due); border-color:var(--due)}
+  .btn[disabled]{opacity:.45; cursor:default}
+  .btnrow{display:flex; gap:8px; flex-wrap:wrap;}
+
+  /* ---------------- filtros ---------------- */
+  .modos{
+    display:grid; grid-template-columns:repeat(3,1fr);
+    border:1px solid var(--rule-2); border-radius:var(--r);
+    overflow:hidden; margin-bottom:12px; background:var(--paper);
+  }
+  .modo{
+    background:none; border:0; border-right:1px solid var(--rule-2);
+    padding:11px 4px; font-family:var(--mono); font-size:11.5px; font-weight:500;
+    letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3);
+  }
+  .modo:last-child{border-right:0}
+  .modo[aria-pressed="true"]{background:var(--accent-soft); color:var(--accent-ink);}
+
+  .filters{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 4px;}
+  .sel > span{
+    display:block; font-family:var(--mono); font-size:10px; font-weight:500;
+    letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); margin-bottom:4px;
+  }
+  select{
+    appearance:none; -webkit-appearance:none;
+    font-family:var(--mono); font-size:12.5px; padding:8px 26px 8px 10px;
+    background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%237B8698' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center; background-size:9px;
+    text-overflow:ellipsis;
+  }
+  select.active{border-color:var(--accent); background-color:var(--accent-soft); color:var(--accent-ink);}
+  .sortline{display:flex; justify-content:space-between; align-items:center; gap:10px; margin:16px 0 4px;}
+
+  /* ---------------- lista ---------------- */
+  .list{list-style:none; margin:0; padding:0; border-top:1px solid var(--rule);}
+  .row{
+    display:grid; grid-template-columns:1fr auto; gap:1px 12px;
+    width:100%; text-align:left; background:none; border:0;
+    border-bottom:1px solid var(--rule); padding:12px 2px; color:inherit; font:inherit;
+  }
+  .row:hover{background:var(--paper-2)}
+  .row .nm{font-family:var(--serif); font-size:24px; line-height:1.15; grid-column:1;}
+  .row .where{grid-column:1; font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--ink-3);}
+  .row .meta{
+    grid-column:1; font-size:13.5px; color:var(--ink-2); margin-top:2px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .row .far{
+    grid-column:2; grid-row:1 / span 3; align-self:center;
+    font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.03em;
+    padding:3px 8px; border-radius:999px; white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+    background:var(--geo-soft); color:var(--geo);
+  }
+
+  /* ---------------- ficha ---------------- */
+  .ficha h2{font-family:var(--serif); font-weight:400; font-size:42px; line-height:1.05; margin:2px 0 6px; text-wrap:balance;}
+  .kv{
+    display:grid; grid-template-columns:auto 1fr; gap:5px 14px;
+    font-family:var(--mono); font-size:12.5px; margin:14px 0 0;
+    padding:12px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+  }
+  .kv dt{color:var(--ink-3); letter-spacing:.05em; text-transform:uppercase; font-size:10.5px; padding-top:2px;}
+  .kv dd{margin:0; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .kv dd a{color:var(--accent-ink)}
+  .notas{list-style:none; margin:18px 0 0; padding:0; border-top:1px solid var(--rule);}
+  .notas li{
+    display:grid; grid-template-columns:74px 1fr; gap:12px;
+    padding:9px 0; border-bottom:1px solid var(--rule); font-size:14.5px;
+  }
+  .notas .f{font-family:var(--mono); font-size:11.5px; color:var(--ink-3); padding-top:3px; font-variant-numeric:tabular-nums;}
+
+  /* ---------------- vacío / avisos ---------------- */
+  .empty{text-align:center; padding:34px 10px; color:var(--ink-2);}
+  .empty .big{font-family:var(--serif); font-size:30px; color:var(--ink); margin-bottom:6px; line-height:1.15;}
+  .banner{
+    background:var(--paper-2); border:1px dashed var(--rule-2); border-radius:var(--r);
+    padding:10px 13px; margin-bottom:16px; font-size:13.5px; color:var(--ink-2);
+  }
+  .banner b{color:var(--ink); font-weight:600;}
+
+  /* ---------------- más ---------------- */
+  .block{border-top:1px solid var(--rule); padding:18px 0 4px;}
+  .block:first-of-type{border-top:0; padding-top:0;}
+  .block h3{font-size:16px; font-weight:600; margin:0 0 4px;}
+  .pasos{margin:12px 0 0; padding-left:20px; color:var(--ink-2); font-size:13.5px; line-height:1.5;}
+  .pasos li{margin-bottom:8px;}
+  .pasos li::marker{font-family:var(--mono); font-size:11px; color:var(--ink-3);}
+  .pasos b{color:var(--ink); font-weight:600;}
+  .url{
+    margin:12px 0 0; padding:11px 13px;
+    background:var(--accent-soft); border-radius:var(--r);
+    font-family:var(--mono); font-size:13.5px; word-break:break-all;
+  }
+  .url a{color:var(--accent-ink); text-decoration:none; font-weight:500;}
+  .url a:hover{text-decoration:underline;}
+  code{font-family:var(--mono); font-size:12.5px; color:var(--ink); background:var(--paper-2); padding:1px 5px; border-radius:4px;}
+  .stats{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:var(--rule); border:1px solid var(--rule);
+    border-radius:var(--r); overflow:hidden; margin-bottom:20px;
+  }
+  .stats div{background:var(--paper); padding:12px 10px;}
+  .stats .v{font-family:var(--mono); font-size:23px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.1;}
+  .stats .k{font-family:var(--mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3); margin-top:3px;}
+  .extract{list-style:none; margin:12px 0 0; padding:0; border-top:1px solid var(--rule);}
+  .extract li{display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--rule);}
+  .extract input[type=checkbox]{margin-top:6px; width:18px; height:18px; accent-color:var(--accent); flex:0 0 auto;}
+  .extract .nm{font-family:var(--serif); font-size:21px; line-height:1.15;}
+  .extract .nt{font-size:13.5px; color:var(--ink-2); line-height:1.4;}
+
+  /* ---------------- nav ---------------- */
+  nav{
+    position:fixed; bottom:0; left:0; right:0; background:var(--paper);
+    border-top:1px solid var(--rule-2); padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav .inner{max-width:620px; margin:0 auto; display:grid; grid-template-columns:repeat(3,1fr);}
+  nav button{
+    background:none; border:0; border-top:2px solid transparent; padding:13px 4px 14px;
+    font-family:var(--mono); font-size:11.5px; font-weight:500;
+    letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); margin-top:-1px;
+  }
+  nav button[aria-current="true"]{color:var(--accent-ink); border-top-color:var(--accent);}
+
+  #toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:78px; z-index:50;
+    background:var(--ink); color:var(--bg); font-size:14px; padding:9px 16px;
+    border-radius:999px; box-shadow:var(--shadow); max-width:88vw; text-align:center;
+  }
+  #toast[hidden]{display:none}
+
+  .backlink{
+    background:none; border:0; padding:0 0 12px;
+    font-family:var(--mono); font-size:11.5px; font-weight:500;
+    letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3);
+  }
+  .backlink:hover{color:var(--accent-ink)}
+</style>
+
+<div class="shell">
+  <header class="mast">
+    <h1>Cómo se llamaba</h1>
+    <div class="tally" id="tally">—</div>
+  </header>
+
+  <main>
+    <!-- ================= AÑADIR ================= -->
+    <section class="view" id="v-add">
+      <div class="field">
+        <div class="eyebrow">Nombre</div>
+        <input type="text" id="f-nombre" placeholder="Marta" autocomplete="off" autocapitalize="words" spellcheck="false">
+      </div>
+
+      <div class="field">
+        <div class="eyebrow">Categoría</div>
+        <input type="text" id="f-cat" list="l-cat" placeholder="trabajo" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <datalist id="l-cat"></datalist>
+        <div class="chips" id="cat-chips"></div>
+      </div>
+
+      <div class="field">
+        <div class="eyebrow">Lugar</div>
+        <input type="text" id="f-lugar" list="l-lugar" placeholder="almacén" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <datalist id="l-lugar"></datalist>
+        <div class="chips" id="lugar-chips"></div>
+      </div>
+
+      <div class="field">
+        <div class="eyebrow">Lo que sepas, tal cual</div>
+        <textarea id="f-nota" rows="4" placeholder="pelo rizado y gafas rojas, lleva calidad, va siempre con Javier, me explicó las no conformidades"></textarea>
+      </div>
+
+      <div class="geo" id="geo-box">
+        <div>
+          <div class="lbl"><span class="dot"></span>Ubicación GPS</div>
+          <div class="val" id="geo-val">desactivada</div>
+        </div>
+        <button class="btn small" id="geo-toggle">Activar</button>
+      </div>
+      <p class="hint" id="geo-aviso" hidden style="margin:-8px 0 18px"></p>
+
+      <button class="btn primary wide" id="save">Guardar</button>
+      <p class="hint">La categoría y el lugar se quedan puestos para el siguiente. Con el GPS activo, la posición se graba sola al guardar: no tienes que escribirla.</p>
+    </section>
+
+    <!-- ================= GENTE ================= -->
+    <section class="view" id="v-list" hidden>
+      <div class="modos" id="modos">
+        <button class="modo" data-modo="nombre" aria-pressed="true">Nombre</button>
+        <button class="modo" data-modo="rasgo" aria-pressed="false">Característica</button>
+        <button class="modo" data-modo="cerca" aria-pressed="false">Cerca de mí</button>
+      </div>
+
+      <div id="modo-texto">
+        <input type="text" id="q" placeholder="Marta" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div id="modo-cerca" hidden>
+        <div class="geo" id="cerca-box">
+          <div>
+            <div class="lbl"><span class="dot"></span><span id="cerca-estado">Sin localizar</span></div>
+            <div class="val" id="cerca-detalle">Mira quién tienes alrededor ahora mismo</div>
+          </div>
+          <button class="btn small" id="cerca-go">Localizarme</button>
+        </div>
+        <div class="chips" id="radio-chips">
+          <button class="chip" data-radio="100" aria-pressed="false">100 m</button>
+          <button class="chip" data-radio="500" aria-pressed="true">500 m</button>
+          <button class="chip" data-radio="2000" aria-pressed="false">2 km</button>
+          <button class="chip" data-radio="20000" aria-pressed="false">20 km</button>
+        </div>
+      </div>
+
+      <div class="filters">
+        <label class="sel"><span>Categoría</span><select id="s-cat"></select></label>
+        <label class="sel"><span>Lugar</span><select id="s-lugar"></select></label>
+      </div>
+
+      <div class="sortline">
+        <span class="eyebrow" style="margin:0" id="list-count"></span>
+        <div class="chips" id="sort-chips" style="margin:0">
+          <button class="chip" data-sort="reciente" aria-pressed="true">reciente</button>
+          <button class="chip" data-sort="alfa" aria-pressed="false">a–z</button>
+        </div>
+      </div>
+
+      <ul class="list" id="people-list"></ul>
+    </section>
+
+    <!-- ================= FICHA ================= -->
+    <section class="view ficha" id="v-person" hidden>
+      <button class="backlink" id="back">← Gente</button>
+      <div id="person-body"></div>
+    </section>
+
+    <!-- ================= MÁS ================= -->
+    <section class="view" id="v-more" hidden>
+      <div class="stats" id="stats"></div>
+
+      <div class="block">
+        <h3>Volcado del día</h3>
+        <p class="hint" style="margin-top:2px">Escribe de corrido todo lo que recuerdes y sepáralo en fichas de una vez. Es la forma realista de sobrevivir a quince presentaciones seguidas.</p>
+        <textarea id="dump" rows="5" placeholder="Hoy en la nave: Marta de calidad, pelo rizado, me enseñó las no conformidades. Su jefe Javier, alto con barba canosa. Y un tal Andrés de PRL que da las charlas de los lunes." style="margin-top:10px"></textarea>
+        <div class="btnrow" style="margin-top:10px">
+          <button class="btn primary" id="dump-go">Separar en fichas</button>
+        </div>
+        <div id="dump-out"></div>
+      </div>
+
+      <div class="block" id="block-llevar" hidden>
+        <h3>Instálala en el móvil</h3>
+        <p class="hint" style="margin-top:2px">Aquí dentro va metida en un marco de claude.ai y ese marco no cede el GPS, por eso te sale «permiso denegado» sin llegar a preguntarte. La versión instalada no tiene esa limitación, y además abre sin conexión y sin iniciar sesión.</p>
+        <p class="url"><a href="https://carlosgm5.github.io/como-se-llamaba/" target="_blank" rel="noopener">carlosgm5.github.io/como-se-llamaba</a></p>
+        <ol class="pasos">
+          <li>Abre esa dirección en Chrome del móvil.</li>
+          <li>Menú de los tres puntos → <b>Instalar aplicación</b> (o <b>Añadir a pantalla de inicio</b>). Chrome la empaqueta y queda en el cajón de apps como cualquier otra, sin barra de navegador.</li>
+          <li>Si ya has guardado fichas aquí, pulsa <b>Exportar JSON</b> y luego <b>Importar JSON</b> en la instalada.</li>
+        </ol>
+        <p class="hint">Es el mismo programa. Lo único que se queda atrás es el volcado del día, que necesita a Claude.</p>
+      </div>
+
+      <div class="block">
+        <h3>Tus datos</h3>
+        <p class="hint" style="margin-top:2px" id="storage-note"></p>
+        <div class="btnrow" style="margin-top:10px">
+          <button class="btn" id="export">Exportar JSON</button>
+          <button class="btn" id="import">Importar JSON</button>
+        </div>
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <div class="inner">
+      <button data-view="add" aria-current="true">Añadir</button>
+      <button data-view="list" aria-current="false">Gente</button>
+      <button data-view="more" aria-current="false">Más</button>
+    </div>
+  </nav>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LS = "csll.v2";
+  var LS_ZONAS = "csll.zonas";
+  var LS_LAST = "csll.last";
+  var LS_GEO = "csll.geo";
+
+  // -------------------------------------------------------------- utilidades
+  function today(){ return iso(new Date()); }
+  function iso(d){
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+  function fold(s){ return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
+  function esc(s){
+    return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function uid(){ return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function fechaCorta(d){
+    var m = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    var p = String(d).split("-");
+    return Number(p[2]) + " " + m[Number(p[1])-1] + " " + String(p[0]).slice(2);
+  }
+  function dist(la1, lo1, la2, lo2){
+    var R = 6371000, t = Math.PI/180;
+    var dLa = (la2-la1)*t, dLo = (lo2-lo1)*t;
+    var h = Math.sin(dLa/2)*Math.sin(dLa/2) +
+            Math.cos(la1*t)*Math.cos(la2*t)*Math.sin(dLo/2)*Math.sin(dLo/2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+  function fmtDist(m){
+    if(m < 1000) return Math.max(10, Math.round(m/10)*10) + " m";
+    if(m < 10000) return (m/1000).toFixed(1) + " km";
+    return Math.round(m/1000) + " km";
+  }
+
+  var toastTimer = null;
+  function toast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.hidden = true; }, 2800);
+  }
+
+  // -------------------------------------------------------------- ejemplos
+  function demoSet(){
+    var d = today();
+    return [
+      { id:"_d1", nombre:"Marta", cat:"trabajo", lugar:"nave 2",
+        notas:[{f:d,t:"pelo rizado y gafas rojas, lleva calidad, va siempre con Javier, me explicó las no conformidades"}],
+        lat:null, lon:null, acc:null, zona:null, creado:d, _demo:true },
+      { id:"_d2", nombre:"Javier", cat:"trabajo", lugar:"nave 2",
+        notas:[{f:d,t:"jefe de mantenimiento, muy alto, barba canosa, el del walkie colgando del cinturón"}],
+        lat:null, lon:null, acc:null, zona:null, creado:d, _demo:true },
+      { id:"_d3", nombre:"Andrés", cat:"trabajo", lugar:"oficinas",
+        notas:[{f:d,t:"PRL, murciano, el que da las charlas de seguridad de los lunes"}],
+        lat:null, lon:null, acc:null, zona:null, creado:d, _demo:true },
+      { id:"_d4", nombre:"Nuria", cat:"gimnasio", lugar:"sala de ciclo",
+        notas:[{f:d,t:"clase de las 7, coleta larga, siempre coge la bici del fondo a la derecha"}],
+        lat:null, lon:null, acc:null, zona:null, creado:d, _demo:true }
+    ];
+  }
+
+  // -------------------------------------------------------------- estado
+  var people = [];
+  var zonas = {};
+  var isDemo = false;
+  var DB = null, SAMPLE = null, DOWNLOADS = null;
+
+  var ui = {
+    view:"add",
+    modo:"nombre",
+    q:"",
+    radio:500,
+    fCat:"", fLugar:"",
+    sort:"reciente",
+    personId:null
+  };
+
+  var last = { cat:"", lugar:"" };
+  try{ last = JSON.parse(localStorage.getItem(LS_LAST)) || last; }catch(e){}
+
+  var geo = { on:false, pos:null, ts:0, err:"", pidiendo:false, aqui:null };
+  try{ geo.on = localStorage.getItem(LS_GEO) === "1"; }catch(e){}
+
+  // -------------------------------------------------------------- almacén
+  function readCache(){
+    try{ var v = JSON.parse(localStorage.getItem(LS) || "[]"); return Array.isArray(v) ? v : []; }
+    catch(e){ return []; }
+  }
+  function writeCache(){
+    try{
+      localStorage.setItem(LS, JSON.stringify(people.filter(function(p){ return !p._demo; })));
+      localStorage.setItem(LS_ZONAS, JSON.stringify(zonas));
+    }catch(e){}
+  }
+  function readZonas(){
+    try{ return JSON.parse(localStorage.getItem(LS_ZONAS)) || {}; }catch(e){ return {}; }
+  }
+
+  function normalizar(id, b){
+    return {
+      id:id,
+      nombre:b.nombre || "?",
+      cat:b.cat || b.ctx || "",
+      lugar:b.lugar || "",
+      notas:Array.isArray(b.notas) ? b.notas : [],
+      lat:(typeof b.lat === "number") ? b.lat : null,
+      lon:(typeof b.lon === "number") ? b.lon : null,
+      acc:(typeof b.acc === "number") ? b.acc : null,
+      zona:b.zona || null,
+      creado:b.creado || today()
+    };
+  }
+  function bodyOf(p){
+    return { nombre:p.nombre, cat:p.cat, lugar:p.lugar, notas:p.notas,
+             lat:p.lat, lon:p.lon, acc:p.acc, zona:p.zona, creado:p.creado };
+  }
+  function persist(p){
+    writeCache();
+    if(DB) DB.collection("personas").doc(p.id).set(bodyOf(p)).catch(function(e){
+      toast(e && e.code === "quota_exceeded" ? "Almacén lleno: borra fichas antiguas."
+                                             : "Guardado solo en este dispositivo.");
+    });
+  }
+  function persistZonas(){
+    writeCache();
+    if(DB) DB.doc("ajustes/zonas").set({ nombres:zonas }).catch(function(){});
+  }
+  function setPeople(arr){
+    if(arr.length === 0){ people = demoSet(); isDemo = true; }
+    else { people = arr; isDemo = false; }
+  }
+  function guardDemo(){
+    if(isDemo){ toast("Eso es un ejemplo. Guarda tu primera persona."); return true; }
+    return false;
+  }
+
+  // -------------------------------------------------------------- GPS
+  var enMarco = (function(){ try{ return window.self !== window.top; }catch(e){ return true; } })();
+
+  // El GPS de un iframe solo funciona si el contenedor lo permite. El visor de
+  // artifacts no lo hace, así que Chrome deniega sin llegar a preguntar.
+  function gpsBloqueadoPorMarco(){
+    if(!enMarco) return false;
+    try{
+      var fp = document.featurePolicy || document.permissionsPolicy;
+      if(fp && typeof fp.allowsFeature === "function") return !fp.allowsFeature("geolocation");
+    }catch(e){}
+    return false;
+  }
+
+  function geoTexto(){
+    if(gpsBloqueadoPorMarco()) return "bloqueada por el visor";
+    if(!geo.on) return "desactivada";
+    if(geo.err) return geo.err;
+    if(geo.pidiendo && !geo.pos) return "buscando señal…";
+    if(!geo.pos) return "sin posición todavía";
+    return geo.pos.lat.toFixed(5) + ", " + geo.pos.lon.toFixed(5) +
+           (geo.pos.acc ? "  ±" + Math.round(geo.pos.acc) + " m" : "");
+  }
+
+  function renderGeo(){
+    var bloqueado = gpsBloqueadoPorMarco();
+    var box = document.getElementById("geo-box");
+    box.className = "geo" + (bloqueado ? " blocked" : (geo.on && !geo.err ? " on" : ""));
+    document.getElementById("geo-val").textContent = geoTexto();
+
+    var btn = document.getElementById("geo-toggle");
+    btn.textContent = bloqueado ? "Por qué" : (geo.on ? "Desactivar" : "Activar");
+
+    var aviso = document.getElementById("geo-aviso");
+    if(bloqueado){
+      aviso.textContent = "Esta página va dentro de un marco de claude.ai y ese marco no cede el GPS, así que el navegador lo deniega sin preguntarte. No es cosa de tu móvil. En Más → Llevártela al móvil tienes cómo instalarla aparte: ahí sí funciona.";
+      aviso.hidden = false;
+    } else if(geo.err === "permiso denegado"){
+      aviso.textContent = "Le dijiste que no, o el sitio tiene la ubicación bloqueada. En Chrome: candado de la barra de direcciones → Permisos → Ubicación.";
+      aviso.hidden = false;
+    } else {
+      aviso.hidden = true;
+    }
+  }
+
+  function pedirPos(cb){
+    if(gpsBloqueadoPorMarco()){ renderGeo(); if(cb) cb(null); return; }
+    if(!navigator.geolocation){ geo.err = "el navegador no da ubicación"; renderGeo(); if(cb) cb(null); return; }
+    if(geo.pos && (Date.now() - geo.ts) < 90000){ if(cb) cb(geo.pos); return; }
+    geo.pidiendo = true; renderGeo();
+    navigator.geolocation.getCurrentPosition(function(r){
+      geo.pos = { lat:r.coords.latitude, lon:r.coords.longitude, acc:r.coords.accuracy };
+      geo.ts = Date.now(); geo.err = ""; geo.pidiendo = false;
+      renderGeo();
+      if(cb) cb(geo.pos);
+    }, function(e){
+      geo.pidiendo = false;
+      var c = e && e.code;
+      geo.err = c === 1 ? "permiso denegado" : (c === 3 ? "sin señal, se agotó el tiempo" : "no se pudo localizar");
+      renderGeo();
+      if(cb) cb(null);
+    }, { enableHighAccuracy:true, timeout:15000, maximumAge:90000 });
+  }
+
+  function zonaPara(lat, lon){
+    var best = null, bd = Infinity;
+    people.forEach(function(p){
+      if(p.lat == null || !p.zona) return;
+      var d = dist(lat, lon, p.lat, p.lon);
+      if(d < bd){ bd = d; best = p.zona; }
+    });
+    return (best && bd <= 150) ? best : ("z" + Date.now().toString(36) + Math.random().toString(36).slice(2,5));
+  }
+  function nombreZona(zid){
+    if(!zid) return "sin zona";
+    if(zonas[zid]) return zonas[zid];
+    var c = {};
+    people.forEach(function(p){ if(p.zona === zid && p.lugar) c[p.lugar] = (c[p.lugar]||0) + 1; });
+    var ks = Object.keys(c).sort(function(a,b){ return c[b]-c[a]; });
+    return ks.length ? ks[0] : "zona sin nombre";
+  }
+  function aplicarPos(p, pos){
+    if(!pos) return;
+    p.lat = pos.lat; p.lon = pos.lon; p.acc = pos.acc;
+    p.zona = zonaPara(pos.lat, pos.lon);
+  }
+
+  // -------------------------------------------------------------- vocabularios
+  function vocab(campo){
+    var c = {};
+    people.forEach(function(p){ if(p[campo]) c[p[campo]] = (c[p[campo]]||0) + 1; });
+    return { counts:c, keys:Object.keys(c).sort(function(a,b){ return c[b]-c[a] || a.localeCompare(b,"es"); }) };
+  }
+  function renderAddVocab(){
+    ["cat","lugar"].forEach(function(campo){
+      var v = vocab(campo);
+      document.getElementById("l-" + campo).innerHTML =
+        v.keys.map(function(k){ return '<option value="'+esc(k)+'"></option>'; }).join("");
+      document.getElementById(campo + "-chips").innerHTML =
+        v.keys.slice(0,6).map(function(k){
+          return '<button type="button" class="chip" data-v="'+esc(k)+'">'+esc(k)+'</button>';
+        }).join("");
+    });
+  }
+
+  // -------------------------------------------------------------- búsqueda
+  function campoBusqueda(p){
+    if(ui.modo === "nombre") return fold(p.nombre);
+    return fold(p.cat + " " + p.lugar + " " + p.notas.map(function(n){ return n.t; }).join(" "));
+  }
+  function matches(p, q){
+    if(!q) return true;
+    var h = campoBusqueda(p);
+    return fold(q).split(/\s+/).filter(Boolean).every(function(tk){ return h.indexOf(tk) !== -1; });
+  }
+  function distanciaA(p){
+    if(!geo.aqui || p.lat == null) return null;
+    return dist(geo.aqui.lat, geo.aqui.lon, p.lat, p.lon);
+  }
+
+  // -------------------------------------------------------------- render
+  function renderTally(){
+    var n = people.filter(function(p){ return !p._demo; }).length;
+    var conGps = people.filter(function(p){ return p.lat != null; }).length;
+    document.getElementById("tally").textContent =
+      isDemo ? "ejemplos" : (n + (n === 1 ? " ficha" : " fichas") + (conGps ? " · " + conGps + " con GPS" : ""));
+  }
+
+  function fillSelect(el, opciones, valor, etiquetaTodos){
+    el.innerHTML = '<option value="">'+etiquetaTodos+'</option>' +
+      opciones.map(function(o){
+        return '<option value="'+esc(o.v)+'"'+(o.v === valor ? " selected" : "")+'>'+esc(o.t)+'</option>';
+      }).join("");
+    el.className = valor ? "active" : "";
+  }
+
+  function renderFiltros(){
+    var vc = vocab("cat"), vl = vocab("lugar");
+    fillSelect(document.getElementById("s-cat"),
+      vc.keys.map(function(k){ return { v:k, t:k + " (" + vc.counts[k] + ")" }; }), ui.fCat, "todas");
+    fillSelect(document.getElementById("s-lugar"),
+      vl.keys.map(function(k){ return { v:k, t:k + " (" + vl.counts[k] + ")" }; }), ui.fLugar, "todos");
+  }
+
+  function renderCercaBox(){
+    var box = document.getElementById("cerca-box");
+    var bloqueado = gpsBloqueadoPorMarco();
+    var loc = !!geo.aqui;
+    box.className = "geo" + (bloqueado ? " blocked" : (loc ? " on" : ""));
+    document.getElementById("cerca-estado").textContent =
+      bloqueado ? "GPS no disponible aquí" : (loc ? "Estás aquí" : "Sin localizar");
+    document.getElementById("cerca-detalle").textContent =
+      bloqueado ? "el visor de Claude no cede el GPS: mira Más → Llevártela al móvil"
+                : (loc ? geo.aqui.lat.toFixed(5) + ", " + geo.aqui.lon.toFixed(5) +
+                         (geo.aqui.acc ? "  ±" + Math.round(geo.aqui.acc) + " m" : "")
+                       : "mira quién tienes alrededor ahora mismo");
+    document.getElementById("cerca-go").textContent = loc ? "Actualizar" : "Localizarme";
+    document.getElementById("cerca-go").disabled = bloqueado;
+  }
+
+  function visibles(){
+    var cerca = ui.modo === "cerca";
+    var out = people.filter(function(p){
+      if(ui.fCat && p.cat !== ui.fCat) return false;
+      if(ui.fLugar && p.lugar !== ui.fLugar) return false;
+      if(cerca){
+        var d = distanciaA(p);
+        return d != null && d <= ui.radio;
+      }
+      return matches(p, ui.q);
+    });
+    if(cerca) out.sort(function(a,b){ return distanciaA(a) - distanciaA(b); });
+    else if(ui.sort === "alfa") out.sort(function(a,b){ return a.nombre.localeCompare(b.nombre,"es"); });
+    else out.sort(function(a,b){ return String(b.creado).localeCompare(String(a.creado)) || b.id.localeCompare(a.id); });
+    return out;
+  }
+
+  function renderList(){
+    renderFiltros();
+    var cerca = ui.modo === "cerca";
+
+    document.getElementById("modo-texto").hidden = cerca;
+    document.getElementById("modo-cerca").hidden = !cerca;
+    document.getElementById("sort-chips").hidden = cerca;
+    document.getElementById("q").placeholder = ui.modo === "nombre" ? "Marta" : "gafas rizado walkie…";
+    Array.prototype.forEach.call(document.querySelectorAll("#modos .modo"), function(b){
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-modo") === ui.modo));
+    });
+    if(cerca) renderCercaBox();
+
+    var rows = visibles();
+    document.getElementById("list-count").textContent =
+      cerca && geo.aqui ? "a menos de " + fmtDist(ui.radio) + " de ti"
+                        : (rows.length ? rows.length + (rows.length === 1 ? " persona" : " personas") : "");
+    var ul = document.getElementById("people-list");
+
+    if(!rows.length){
+      var titulo, cuerpo;
+      if(cerca && !geo.aqui){ titulo = "Primero localízate"; cuerpo = "Pulsa Localizarme y te digo a quién tienes alrededor."; }
+      else if(cerca){ titulo = "Nadie a la redonda"; cuerpo = "No hay fichas con GPS dentro de " + fmtDist(ui.radio) + ". Prueba a ampliar el radio."; }
+      else if(ui.q || ui.fCat || ui.fLugar){ titulo = "Nadie por aquí"; cuerpo = "Quita algún filtro o prueba con menos palabras."; }
+      else { titulo = "Nadie por aquí"; cuerpo = "Añade a alguien desde la pestaña Añadir."; }
+      ul.innerHTML = '<li class="empty"><div class="big">'+titulo+'</div><div>'+cuerpo+'</div></li>';
+      return;
+    }
+
+    ul.innerHTML = rows.map(function(p){
+      var d = distanciaA(p);
+      var ultima = p.notas.length ? p.notas[p.notas.length-1].t : "";
+      var donde = [p.cat, p.lugar].filter(Boolean).join(" · ") || "sin categoría";
+      return '<li><button class="row" data-id="'+esc(p.id)+'">' +
+        '<span class="nm">'+esc(p.nombre)+'</span>' +
+        (d != null ? '<span class="far">'+esc(fmtDist(d))+'</span>' : '') +
+        '<span class="where">'+esc(donde)+'</span>' +
+        '<span class="meta">'+esc(ultima)+'</span>' +
+        '</button></li>';
+    }).join("");
+  }
+
+  function renderPerson(){
+    var p = people.filter(function(x){ return x.id === ui.personId; })[0];
+    if(!p){ go("list"); return; }
+    var d = distanciaA(p);
+
+    var h = '';
+    h += '<div class="eyebrow">'+esc([p.cat, p.lugar].filter(Boolean).join(" · ") || "sin categoría")+'</div>';
+    h += '<h2>'+esc(p.nombre)+'</h2>';
+
+    h += '<dl class="kv">';
+    h += '<dt>Categoría</dt><dd>'+esc(p.cat || "—")+'</dd>';
+    h += '<dt>Lugar</dt><dd>'+esc(p.lugar || "—")+'</dd>';
+    if(p.lat != null){
+      h += '<dt>Zona</dt><dd>'+esc(nombreZona(p.zona))+' <button class="btn small" id="ren-zona" style="padding:2px 8px; font-size:11px; margin-left:4px">renombrar</button></dd>';
+      h += '<dt>Coord.</dt><dd>'+p.lat.toFixed(5)+', '+p.lon.toFixed(5)+
+           (p.acc ? ' ±'+Math.round(p.acc)+' m' : '') +
+           ' · <a href="https://www.google.com/maps?q='+p.lat+','+p.lon+'" target="_blank" rel="noopener">mapa</a>'+
+           ' · <button class="btn small" id="cp-coord" style="padding:2px 8px; font-size:11px">copiar</button></dd>';
+      if(d != null) h += '<dt>Distancia</dt><dd>a '+esc(fmtDist(d))+' de ti</dd>';
+    } else {
+      h += '<dt>Zona</dt><dd>sin GPS</dd>';
+    }
+    h += '<dt>Alta</dt><dd>'+esc(fechaCorta(p.creado))+'</dd>';
+    h += '</dl>';
+
+    h += '<ul class="notas">' + p.notas.map(function(n){
+      return '<li><span class="f">'+esc(fechaCorta(n.f))+'</span><span>'+esc(n.t)+'</span></li>';
+    }).join("") + '</ul>';
+
+    h += '<div class="field" style="margin-top:18px"><div class="eyebrow">Añadir lo nuevo</div>' +
+         '<textarea id="add-nota" rows="2" placeholder="hoy me contó que lleva el proyecto de la línea 3"></textarea></div>';
+    h += '<div class="btnrow"><button class="btn primary" id="save-nota">Añadir nota</button>' +
+         '<button class="btn" id="edit-p">Editar</button>' +
+         '<button class="btn danger" id="del-p">Borrar</button></div>';
+
+    document.getElementById("person-body").innerHTML = h;
+
+    document.getElementById("save-nota").onclick = function(){
+      if(guardDemo()) return;
+      var t = document.getElementById("add-nota").value.trim();
+      if(!t) return;
+      p.notas.push({ f:today(), t:t });
+      persist(p); renderPerson(); toast("Nota añadida");
+    };
+    document.getElementById("edit-p").onclick = function(){
+      if(guardDemo()) return;
+      var n = prompt("Nombre", p.nombre); if(n === null) return;
+      var c = prompt("Categoría", p.cat); if(c === null) return;
+      var l = prompt("Lugar", p.lugar); if(l === null) return;
+      p.nombre = n.trim() || p.nombre;
+      p.cat = c.trim().toLowerCase();
+      p.lugar = l.trim().toLowerCase();
+      persist(p); renderPerson(); renderTally(); renderAddVocab();
+    };
+    document.getElementById("del-p").onclick = function(){
+      if(guardDemo()) return;
+      if(!confirm("¿Borrar la ficha de " + p.nombre + "?")) return;
+      people = people.filter(function(x){ return x.id !== p.id; });
+      writeCache();
+      if(DB) DB.collection("personas").doc(p.id).delete().catch(function(){});
+      if(people.length === 0) setPeople([]);
+      renderTally(); go("list");
+    };
+    var rz = document.getElementById("ren-zona");
+    if(rz) rz.onclick = function(){
+      if(guardDemo()) return;
+      var v = prompt("Nombre de esta zona", nombreZona(p.zona));
+      if(v === null) return;
+      v = v.trim();
+      if(v) zonas[p.zona] = v; else delete zonas[p.zona];
+      persistZonas(); renderPerson();
+    };
+    var cp = document.getElementById("cp-coord");
+    if(cp) cp.onclick = function(){
+      var txt = p.lat + ", " + p.lon;
+      if(navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){ toast("Coordenadas copiadas"); }, function(){});
+    };
+  }
+
+  function renderMore(){
+    var reales = people.filter(function(p){ return !p._demo; });
+    var vc = vocab("cat");
+    var conGps = reales.filter(function(p){ return p.lat != null; }).length;
+    document.getElementById("stats").innerHTML =
+      '<div><div class="v">'+reales.length+'</div><div class="k">fichas</div></div>' +
+      '<div><div class="v">'+vc.keys.length+'</div><div class="k">categorías</div></div>' +
+      '<div><div class="v">'+conGps+'</div><div class="k">con GPS</div></div>';
+    document.getElementById("storage-note").textContent = DB
+      ? "Ahora mismo se guardan en el almacén de esta página en Claude, así que el móvil y el ordenador ven lo mismo. Exporta de vez en cuando: el JSON se puede importar en cualquier copia de esta página, esté donde esté."
+      : "Se guardan en este dispositivo, sin conexión y sin depender de nadie. Exporta para llevártelos a otro sitio.";
+    document.getElementById("dump-go").disabled = !SAMPLE;
+    document.getElementById("block-llevar").hidden = !enMarco;
+  }
+
+  // -------------------------------------------------------------- Claude
+  function sampleError(e){
+    var c = e && e.code;
+    if(c === "not_granted" || c === "sampling_disabled" || c === "not_declared") return "Esta página no tiene permiso para usar Claude aquí.";
+    if(c === "rate_limited") return "Demasiadas peticiones seguidas. Espera un momento.";
+    if(c === "session_expired") return "Vuelve a iniciar sesión y reinténtalo.";
+    if(c === "invalid_json") return "La respuesta no vino en el formato esperado. Prueba otra vez.";
+    if(c === "cancelled") return "";
+    return "No se pudo completar. Inténtalo de nuevo.";
+  }
+
+  function extraerVolcado(){
+    var txt = document.getElementById("dump").value.trim();
+    var out = document.getElementById("dump-out");
+    if(!txt){ toast("Escribe algo primero."); return; }
+    if(!SAMPLE){ toast("El volcado solo funciona dentro de Claude."); return; }
+
+    var btn = document.getElementById("dump-go");
+    btn.disabled = true; btn.textContent = "Leyendo…";
+    out.innerHTML = "";
+
+    var prompt =
+      "Extrae cada PERSONA distinta mencionada en las notas rápidas de abajo.\n" +
+      "Responde SOLO con un array JSON de objetos {\"nombre\": string, \"nota\": string}.\n" +
+      "\"nombre\" es el nombre de pila tal como aparece; añade apellido solo si se menciona.\n" +
+      "\"nota\" resume en una sola línea todo lo que se dice de esa persona: cargo, rasgos físicos, dónde estaba, con quién va, de qué habló. En español.\n" +
+      "Si no hay ninguna persona, responde [].\n" +
+      "Ejemplo: [{\"nombre\":\"Marta\",\"nota\":\"calidad, pelo rizado, trabaja con Javier, me explicó las no conformidades\"}]\n\n" +
+      "NOTAS:\n" + txt.slice(0, 6000);
+
+    SAMPLE.json(prompt, { modelTier:"quick", cache:false }).then(function(res){
+      var arr = (Array.isArray(res) ? res : []).filter(function(r){ return r && r.nombre; });
+      if(!arr.length){ out.innerHTML = '<p class="hint">No he encontrado personas ahí.</p>'; return; }
+      var destino = [last.cat, last.lugar].filter(Boolean).join(" · ") || "sin categoría";
+      out.innerHTML =
+        '<ul class="extract">' + arr.map(function(r, i){
+          return '<li><input type="checkbox" id="x'+i+'" checked><label for="x'+i+'">' +
+            '<span class="nm">'+esc(r.nombre)+'</span><div class="nt">'+esc(r.nota||"")+'</div></label></li>';
+        }).join("") + '</ul>' +
+        '<div class="btnrow" style="margin-top:12px"><button class="btn primary" id="dump-add">Añadir a '+esc(destino)+'</button></div>' +
+        '<p class="hint">Se crean con la categoría y el lugar que tengas puestos en Añadir, y con tu posición actual si el GPS está activo.</p>';
+
+      document.getElementById("dump-add").onclick = function(){
+        var n = 0;
+        arr.forEach(function(r, i){
+          var cb = document.getElementById("x"+i);
+          if(!cb || !cb.checked) return;
+          crear(String(r.nombre).trim(), String(r.nota||"").trim());
+          n++;
+        });
+        document.getElementById("dump").value = "";
+        out.innerHTML = "";
+        toast(n + (n === 1 ? " ficha creada" : " fichas creadas"));
+        renderAll();
+      };
+    }).catch(function(e){
+      var m = sampleError(e);
+      if(m) out.innerHTML = '<p class="hint">'+esc(m)+'</p>';
+    }).then(function(){
+      btn.disabled = false; btn.textContent = "Separar en fichas";
+    });
+  }
+
+  // -------------------------------------------------------------- crear
+  function crear(nombre, nota){
+    if(isDemo){ people = []; isDemo = false; }
+    var p = {
+      id:uid(), nombre:nombre,
+      cat:last.cat, lugar:last.lugar,
+      notas:nota ? [{ f:today(), t:nota }] : [],
+      lat:null, lon:null, acc:null, zona:null,
+      creado:today()
+    };
+    people.push(p);
+    if(geo.on){
+      if(geo.pos && (Date.now() - geo.ts) < 90000){ aplicarPos(p, geo.pos); }
+      else {
+        pedirPos(function(pos){
+          if(!pos) return;
+          aplicarPos(p, pos); persist(p);
+          if(ui.view === "list") renderList();
+          if(ui.view === "person") renderPerson();
+        });
+      }
+    }
+    persist(p);
+    return p;
+  }
+
+  // -------------------------------------------------------------- navegación
+  function go(view){
+    ui.view = view;
+    ["add","list","person","more"].forEach(function(v){
+      document.getElementById("v-" + v).hidden = (v !== view);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("nav button"), function(b){
+      var v = b.getAttribute("data-view");
+      b.setAttribute("aria-current", String(v === view || (view === "person" && v === "list")));
+    });
+    if(view === "add"){ renderAddVocab(); renderGeo(); if(geo.on) pedirPos(); }
+    if(view === "list")   renderList();
+    if(view === "person") renderPerson();
+    if(view === "more")   renderMore();
+    window.scrollTo(0, 0);
+  }
+
+  function renderAll(){
+    renderTally();
+    renderAddVocab();
+    if(ui.view === "list")   renderList();
+    if(ui.view === "person") renderPerson();
+    if(ui.view === "more")   renderMore();
+  }
+
+  // -------------------------------------------------------------- eventos
+  document.querySelector("nav").addEventListener("click", function(ev){
+    var b = ev.target.closest("button[data-view]");
+    if(b) go(b.getAttribute("data-view"));
+  });
+
+  ["cat","lugar"].forEach(function(campo){
+    document.getElementById(campo + "-chips").addEventListener("click", function(ev){
+      var b = ev.target.closest(".chip"); if(!b) return;
+      document.getElementById("f-" + campo).value = b.getAttribute("data-v");
+    });
+  });
+
+  document.getElementById("geo-toggle").onclick = function(){
+    if(gpsBloqueadoPorMarco()){ go("more"); return; }
+    geo.on = !geo.on;
+    geo.err = "";
+    try{ localStorage.setItem(LS_GEO, geo.on ? "1" : "0"); }catch(e){}
+    renderGeo();
+    if(geo.on) pedirPos();
+  };
+
+  document.getElementById("save").onclick = function(){
+    var n = document.getElementById("f-nombre").value.trim();
+    var c = document.getElementById("f-cat").value.trim().toLowerCase();
+    var l = document.getElementById("f-lugar").value.trim().toLowerCase();
+    var t = document.getElementById("f-nota").value.trim();
+    if(!n){ toast("Al menos el nombre."); document.getElementById("f-nombre").focus(); return; }
+    last.cat = c; last.lugar = l;
+    try{ localStorage.setItem(LS_LAST, JSON.stringify(last)); }catch(e){}
+    crear(n, t);
+    document.getElementById("f-nombre").value = "";
+    document.getElementById("f-nota").value = "";
+    document.getElementById("f-nombre").focus();
+    toast(n + " guardado" + (l ? " en " + l : ""));
+    renderAll();
+  };
+  document.getElementById("f-nombre").addEventListener("keydown", function(ev){
+    if(ev.key === "Enter"){ ev.preventDefault(); document.getElementById("f-nota").focus(); }
+  });
+
+  function localizarme(){
+    renderCercaBox();
+    pedirPos(function(pos){
+      if(pos) geo.aqui = pos;
+      else if(!gpsBloqueadoPorMarco()) toast("No he podido localizarte.");
+      renderList();
+    });
+  }
+
+  document.getElementById("q").addEventListener("input", function(){ ui.q = this.value; renderList(); });
+  document.getElementById("s-cat").addEventListener("change", function(){ ui.fCat = this.value; renderList(); });
+  document.getElementById("s-lugar").addEventListener("change", function(){ ui.fLugar = this.value; renderList(); });
+
+  document.getElementById("modos").addEventListener("click", function(ev){
+    var b = ev.target.closest(".modo"); if(!b) return;
+    ui.modo = b.getAttribute("data-modo");
+    renderList();
+    if(ui.modo === "cerca" && !geo.aqui) localizarme();
+    else if(ui.modo !== "cerca") document.getElementById("q").focus();
+  });
+  document.getElementById("cerca-go").onclick = function(){ geo.ts = 0; localizarme(); };
+  document.getElementById("radio-chips").addEventListener("click", function(ev){
+    var b = ev.target.closest(".chip"); if(!b) return;
+    ui.radio = Number(b.getAttribute("data-radio"));
+    Array.prototype.forEach.call(this.querySelectorAll(".chip"), function(c){
+      c.setAttribute("aria-pressed", String(c === b));
+    });
+    renderList();
+  });
+  document.getElementById("sort-chips").addEventListener("click", function(ev){
+    var b = ev.target.closest(".chip"); if(!b) return;
+    ui.sort = b.getAttribute("data-sort");
+    Array.prototype.forEach.call(this.querySelectorAll(".chip"), function(c){
+      c.setAttribute("aria-pressed", String(c === b));
+    });
+    renderList();
+  });
+  document.getElementById("people-list").addEventListener("click", function(ev){
+    var b = ev.target.closest(".row"); if(!b) return;
+    ui.personId = b.getAttribute("data-id");
+    go("person");
+  });
+  document.getElementById("back").onclick = function(){ go("list"); };
+
+  document.getElementById("dump-go").onclick = extraerVolcado;
+
+  document.getElementById("export").onclick = function(){
+    var data = JSON.stringify({ personas:people.filter(function(p){ return !p._demo; }), zonas:zonas }, null, 2);
+    if(DOWNLOADS){
+      DOWNLOADS.save({ filename:"como-se-llamaba.json", data:data }).catch(function(e){
+        if(e && e.code !== "declined") toast("No se pudo guardar el archivo.");
+      });
+    } else {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([data], {type:"application/json"}));
+      a.download = "como-se-llamaba.json";
+      a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+    }
+  };
+  document.getElementById("import").onclick = function(){ document.getElementById("import-file").click(); };
+  document.getElementById("import-file").addEventListener("change", function(){
+    var f = this.files && this.files[0];
+    if(!f) return;
+    var fr = new FileReader();
+    fr.onload = function(){
+      var d;
+      try{ d = JSON.parse(fr.result); }catch(e){ toast("Ese archivo no es un JSON válido."); return; }
+      var arr = Array.isArray(d) ? d : (d && Array.isArray(d.personas) ? d.personas : null);
+      if(!arr){ toast("No encuentro personas en ese archivo."); return; }
+      if(d && d.zonas) { zonas = Object.assign({}, zonas, d.zonas); persistZonas(); }
+      if(isDemo){ people = []; isDemo = false; }
+      var ids = {};
+      people.forEach(function(p){ ids[p.id] = 1; });
+      var n = 0;
+      arr.forEach(function(raw){
+        if(!raw || ids[raw.id]) return;
+        var p = normalizar(raw.id || uid(), raw);
+        people.push(p); persist(p); n++;
+      });
+      toast(n + (n === 1 ? " ficha importada" : " fichas importadas"));
+      renderAll();
+    };
+    fr.readAsText(f);
+    this.value = "";
+  });
+
+  // -------------------------------------------------------------- arranque
+  zonas = readZonas();
+  var inicial = readCache();
+  if(!inicial.length){
+    try{
+      var v1 = JSON.parse(localStorage.getItem("csll.v1") || "[]");
+      if(Array.isArray(v1)) inicial = v1;
+    }catch(e){}
+  }
+  setPeople(inicial.map(function(p){ return normalizar(p.id || uid(), p); }));
+  document.getElementById("f-cat").value = last.cat;
+  document.getElementById("f-lugar").value = last.lugar;
+  go("add");
+  renderTally();
+
+  if(isDemo){
+    document.getElementById("v-list").insertAdjacentHTML("afterbegin",
+      '<div class="banner" id="demo-banner"><b>Son ejemplos.</b> Desaparecen en cuanto guardes a tu primera persona. Fíjate en cómo están escritas las notas: rasgo físico, cargo, con quién va, de qué hablasteis.</div>');
+  }
+
+  // Chrome en Android encoge el viewport al abrir el teclado y una barra fija
+  // se queda flotando en mitad de la pantalla.
+  if(window.visualViewport){
+    var navEl = document.querySelector("nav");
+    window.visualViewport.addEventListener("resize", function(){
+      navEl.hidden = (window.innerHeight - window.visualViewport.height) > 160;
+    });
+  }
+
+  if(!enMarco && "serviceWorker" in navigator && location.protocol === "https:"){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
+
+  if(window.claude && claude.use){
+    claude.use("downloads").then(function(d){ DOWNLOADS = d; }, function(){});
+    claude.use("sample").then(function(s){ SAMPLE = s; if(ui.view === "more") renderMore(); }, function(){});
+    claude.use("db").then(function(db){
+      if(!db) return;
+      DB = db;
+
+      db.doc("ajustes/zonas").onSnapshot(function(snap){
+        if(snap.exists){
+          var b = snap.data() || {};
+          if(b.nombres && typeof b.nombres === "object"){
+            zonas = b.nombres;
+            writeCache();
+            if(ui.view === "list") renderList();
+            if(ui.view === "person") renderPerson();
+          }
+        }
+      }, function(){});
+
+      var first = true;
+      db.collection("personas").onSnapshot(function(snap){
+        var remote = snap.docs.map(function(d){ return normalizar(d.id, d.data() || {}); });
+        if(first){
+          first = false;
+          var ids = {};
+          remote.forEach(function(p){ ids[p.id] = 1; });
+          readCache().forEach(function(raw){
+            if(ids[raw.id]) return;
+            var p = normalizar(raw.id || uid(), raw);
+            remote.push(p);
+            db.collection("personas").doc(p.id).set(bodyOf(p)).catch(function(){});
+          });
+        }
+        setPeople(remote);
+        writeCache();
+        var banner = document.getElementById("demo-banner");
+        if(banner && !isDemo) banner.remove();
+        renderAll();
+      }, function(){
+        toast("Sin conexión con el almacén: los cambios quedan en este dispositivo.");
+      });
+    }, function(){});
+  }
+})();
+</script>
+</body>
+</html>
